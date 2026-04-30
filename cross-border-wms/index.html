@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>跨境电商仓库管理系统</title>
+  <link rel="stylesheet" href="assets/css/variables.css">
+  <link rel="stylesheet" href="assets/css/base.css">
+  <style>
+    .landing {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 40%, #0f172a 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-8);
+      position: relative;
+      overflow: hidden;
+    }
+    .landing::before {
+      content: '';
+      position: absolute;
+      width: 800px; height: 800px;
+      background: radial-gradient(circle, rgba(37,99,235,0.12), transparent 60%);
+      top: -300px; right: -200px;
+      border-radius: 50%;
+    }
+    .landing::after {
+      content: '';
+      position: absolute;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(16,185,129,0.08), transparent 60%);
+      bottom: -200px; left: -100px;
+      border-radius: 50%;
+    }
+    .landing-content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      max-width: 800px;
+    }
+    .landing-logo {
+      width: 80px; height: 80px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: var(--radius-2xl);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      margin: 0 auto var(--space-6);
+      box-shadow: 0 12px 40px rgba(37,99,235,0.35);
+      animation: fadeIn 0.8s ease-out;
+    }
+    .landing h1 {
+      color: #fff;
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: var(--space-3);
+      animation: fadeIn 0.8s ease-out 0.1s both;
+    }
+    .landing h1 span {
+      background: linear-gradient(135deg, var(--primary-light), var(--accent-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .landing p {
+      color: var(--gray-400);
+      font-size: 1.125rem;
+      margin-bottom: var(--space-10);
+      line-height: 1.8;
+      animation: fadeIn 0.8s ease-out 0.2s both;
+    }
+    .landing-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-6);
+      animation: fadeIn 0.8s ease-out 0.3s both;
+    }
+    @media (max-width: 640px) { .landing-cards { grid-template-columns: 1fr; } }
+    .landing-card {
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius-2xl);
+      padding: var(--space-8) var(--space-6);
+      text-align: center;
+      transition: all var(--transition-normal);
+      cursor: pointer;
+      text-decoration: none;
+      color: #fff;
+      display: block;
+    }
+    .landing-card:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.2);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+    .landing-card-icon {
+      width: 64px; height: 64px;
+      border-radius: var(--radius-xl);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.75rem;
+      margin: 0 auto var(--space-4);
+    }
+    .landing-card-icon.admin { background: linear-gradient(135deg, var(--primary), #7c3aed); }
+    .landing-card-icon.warehouse { background: linear-gradient(135deg, var(--accent), var(--info)); }
+    .landing-card h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: var(--space-2);
+    }
+    .landing-card p {
+      font-size: 0.875rem;
+      color: var(--gray-400);
+      margin-bottom: 0;
+    }
+    .landing-card .arrow {
+      display: inline-block;
+      margin-top: var(--space-4);
+      font-size: 1.5rem;
+      opacity: 0;
+      transform: translateX(-8px);
+      transition: all var(--transition-fast);
+    }
+    .landing-card:hover .arrow {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    .landing-footer {
+      position: relative;
+      z-index: 1;
+      margin-top: var(--space-10);
+      color: var(--gray-600);
+      font-size: 0.8125rem;
+      animation: fadeIn 0.8s ease-out 0.4s both;
+    }
+    .flow-diagram {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+      margin-top: var(--space-8);
+      animation: fadeIn 0.8s ease-out 0.35s both;
+      position: relative;
+      z-index: 1;
+    }
+    .flow-step {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius-full);
+      color: var(--gray-300);
+      font-size: 0.8125rem;
+      white-space: nowrap;
+    }
+    .flow-arrow { color: var(--gray-600); }
+  </style>
+</head>
+<body>
+  <div class="landing">
+    <div class="landing-content">
+      <div class="landing-logo">🌐</div>
+      <h1>跨境电商<span>仓库管理系统</span></h1>
+      <p>
+        专业的跨界电商仓储作业平台，支持包裹扫码入库、国内面单拆除、<br>
+        商品核实、跨境面单粘贴、报关申报等全流程管理
+      </p>
+
+      <div class="landing-cards">
+        <a href="admin/" class="landing-card">
+          <div class="landing-card-icon admin">🛡️</div>
+          <h3>管理员端</h3>
+          <p>数据看板、订单管理、报关管理、<br>操作员管理、数据报表</p>
+          <span class="arrow">→</span>
+        </a>
+        <a href="warehouse/" class="landing-card">
+          <div class="landing-card-icon warehouse">📦</div>
+          <h3>仓库作业端</h3>
+          <p>扫码入库、撕除旧标、商品核实、<br>贴跨境面单、报关提交</p>
+          <span class="arrow">→</span>
+        </a>
+      </div>
+
+      <div class="flow-diagram">
+        <div class="flow-step">📦 包裹到达</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">📷 扫码入库</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">🏷️ 撕除旧标</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">✅ 核实商品</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">📋 贴跨境面单</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">🛃 报关出库</div>
+      </div>
+    </div>
+
+    <div class="landing-footer">
+      Cross-Border E-Commerce Warehouse Management System &copy; 2026
+    </div>
+  </div>
+</body>
+</html>

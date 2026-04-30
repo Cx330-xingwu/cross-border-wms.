@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>跨境电商仓库管理系统 - 仓库端</title>
+  <link rel="stylesheet" href="../assets/css/variables.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <style>
+    .wh-header {
+      background: linear-gradient(135deg, var(--gray-900), #1e293b);
+      color: #fff;
+      padding: var(--space-4) var(--space-6);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .wh-header-left { display: flex; align-items: center; gap: var(--space-3); }
+    .wh-logo {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+    }
+    .wh-title { font-weight: 700; font-size: 1rem; }
+    .wh-subtitle { font-size: 0.75rem; color: var(--gray-400); }
+    .wh-header-right { display: flex; align-items: center; gap: var(--space-3); }
+    .wh-user {
+      display: flex; align-items: center; gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      background: rgba(255,255,255,0.08);
+      border-radius: var(--radius-lg);
+      font-size: 0.875rem;
+    }
+    .wh-user-dot {
+      width: 8px; height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+    }
+    .wh-nav {
+      background: #fff;
+      border-bottom: 1px solid var(--gray-200);
+      display: flex;
+      gap: 0;
+      overflow-x: auto;
+      position: sticky;
+      top: 60px;
+      z-index: 99;
+    }
+    .wh-nav-btn {
+      padding: var(--space-4) var(--space-6);
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--gray-500);
+      background: none;
+      border: none;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all var(--transition-fast);
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .wh-nav-btn:hover { color: var(--gray-700); background: var(--gray-50); }
+    .wh-nav-btn.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+    .wh-nav-btn .nav-icon { font-size: 1.125rem; }
+
+    .wh-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: var(--space-6);
+    }
+
+    /* Scan Section */
+    .scan-section {
+      margin-bottom: var(--space-6);
+    }
+    .scan-result {
+      margin-top: var(--space-6);
+      animation: fadeIn 0.4s ease-out;
+    }
+    .scan-result-card {
+      background: #fff;
+      border: 2px solid var(--accent);
+      border-radius: var(--radius-2xl);
+      overflow: hidden;
+      box-shadow: 0 8px 30px rgba(16,185,129,0.15);
+    }
+    .scan-result-header {
+      background: linear-gradient(135deg, var(--accent-50), var(--primary-50));
+      padding: var(--space-5) var(--space-6);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .scan-result-id { font-family: var(--font-mono); font-weight: 700; font-size: 1.125rem; }
+    .scan-result-body { padding: var(--space-6); }
+
+    /* Processing Steps */
+    .process-steps {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      margin-top: var(--space-6);
+    }
+    .process-step {
+      background: #fff;
+      border: 2px solid var(--gray-200);
+      border-radius: var(--radius-xl);
+      padding: var(--space-5) var(--space-6);
+      transition: all var(--transition-normal);
+      cursor: default;
+    }
+    .process-step.active {
+      border-color: var(--primary);
+      box-shadow: 0 4px 20px rgba(37,99,235,0.15);
+    }
+    .process-step.done {
+      border-color: var(--accent);
+      background: var(--accent-50);
+    }
+    .process-step-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-3);
+    }
+    .process-step-title {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    .process-step-num {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--gray-200);
+      color: var(--gray-600);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.875rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .process-step.active .process-step-num {
+      background: var(--primary);
+      color: #fff;
+    }
+    .process-step.done .process-step-num {
+      background: var(--accent);
+      color: #fff;
+    }
+    .process-step-desc {
+      font-size: 0.875rem;
+      color: var(--gray-500);
+      margin-top: var(--space-1);
+    }
+    .process-step-body {
+      margin-top: var(--space-4);
+    }
+
+    /* Verify Items */
+    .verify-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      padding: var(--space-4);
+      background: var(--gray-50);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--space-3);
+      transition: all var(--transition-fast);
+    }
+    .verify-item.verified {
+      background: var(--accent-50);
+      border: 1px solid rgba(16,185,129,0.3);
+    }
+    .verify-item-info { flex: 1; }
+    .verify-item-name { font-weight: 600; font-size: 0.9375rem; }
+    .verify-item-meta { font-size: 0.8125rem; color: var(--gray-500); margin-top: 2px; }
+    .verify-check {
+      width: 44px; height: 44px;
+      border-radius: var(--radius-lg);
+      border: 2px solid var(--gray-300);
+      background: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      transition: all var(--transition-fast);
+      color: transparent;
+    }
+    .verify-check:hover { border-color: var(--accent); }
+    .verify-check.checked {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    /* Label Print Preview */
+    .label-preview {
+      background: #fff;
+      border: 2px dashed var(--gray-300);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      max-width: 400px;
+      margin: var(--space-4) auto;
+    }
+    .label-preview .label-header {
+      text-align: center;
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: var(--space-3);
+      padding-bottom: var(--space-3);
+      border-bottom: 2px solid var(--gray-800);
+    }
+    .label-preview .label-row {
+      display: flex;
+      justify-content: space-between;
+      padding: var(--space-1) 0;
+    }
+    .label-preview .label-barcode {
+      text-align: center;
+      margin-top: var(--space-3);
+      padding-top: var(--space-3);
+      border-top: 1px solid var(--gray-300);
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+    }
+
+    /* Today Stats */
+    .today-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-4);
+      margin-bottom: var(--space-6);
+    }
+    @media (max-width: 640px) { .today-stats { grid-template-columns: 1fr; } }
+
+    /* Queue List */
+    .queue-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+    .queue-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      padding: var(--space-4) var(--space-5);
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    .queue-item:hover {
+      border-color: var(--primary);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-1px);
+    }
+    .queue-item-icon {
+      width: 44px; height: 44px;
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+    .queue-item-info { flex: 1; }
+    .queue-item-title { font-weight: 600; font-size: 0.9375rem; }
+    .queue-item-meta { font-size: 0.8125rem; color: var(--gray-500); margin-top: 2px; }
+    .queue-item-arrow { color: var(--gray-400); font-size: 1.25rem; }
+
+    /* Success animation */
+    @keyframes successPop {
+      0% { transform: scale(0.8); opacity: 0; }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .success-pop { animation: successPop 0.4s ease-out; }
+
+    .success-screen {
+      text-align: center;
+      padding: var(--space-12) var(--space-6);
+    }
+    .success-icon-big {
+      width: 96px; height: 96px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      margin: 0 auto var(--space-6);
+      box-shadow: 0 12px 40px rgba(16,185,129,0.3);
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="wh-header">
+    <div class="wh-header-left">
+      <div class="wh-logo">📦</div>
+      <div>
+        <div class="wh-title">跨界仓库作业端</div>
+        <div class="wh-subtitle">Warehouse Operations</div>
+      </div>
+    </div>
+    <div class="wh-header-right">
+      <div class="wh-user">
+        <span class="wh-user-dot"></span>
+        <span>仓管员小王</span>
+      </div>
+      <button class="btn btn-ghost btn-sm" style="color:var(--gray-400)" onclick="window.location.href='../admin/'" title="切换到管理端">🔀</button>
+    </div>
+  </header>
+
+  <!-- Navigation -->
+  <nav class="wh-nav">
+    <button class="wh-nav-btn active" data-tab="scan" onclick="switchTab('scan')">
+      <span class="nav-icon">📷</span> 扫码处理
+    </button>
+    <button class="wh-nav-btn" data-tab="queue" onclick="switchTab('queue')">
+      <span class="nav-icon">📋</span> 待处理队列
+    </button>
+    <button class="wh-nav-btn" data-tab="history" onclick="switchTab('history')">
+      <span class="nav-icon">🕐</span> 处理记录
+    </button>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="wh-container">
+    <!-- Scan Tab -->
+    <div id="tab-scan" class="tab-content">
+      <!-- Today Stats -->
+      <div class="today-stats">
+        <div class="stat-card">
+          <div class="stat-icon blue">📦</div>
+          <div class="stat-content">
+            <div class="stat-label">今日处理</div>
+            <div class="stat-value" id="wh-today-count">0</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon amber">⏳</div>
+          <div class="stat-content">
+            <div class="stat-label">待处理</div>
+            <div class="stat-value" id="wh-pending-count">0</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">✅</div>
+          <div class="stat-content">
+            <div class="stat-label">已完成</div>
+            <div class="stat-value" id="wh-done-count">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scan Area -->
+      <div class="scan-section" id="scan-section">
+        <div class="scan-area">
+          <div class="scan-area-content">
+            <div class="scan-icon">📷</div>
+            <h2 style="font-size:1.25rem;margin-bottom:var(--space-2)">扫描或输入国内快递单号</h2>
+            <p style="font-size:0.875rem;color:rgba(255,255,255,0.6)">扫描包裹上的二维码 / 条形码，或手动输入单号</p>
+            <input type="text" class="scan-input" id="scan-input" placeholder="请扫描或输入快递单号..." autofocus>
+            <div style="margin-top:var(--space-4);display:flex;gap:var(--space-3);justify-content:center">
+              <button class="btn btn-primary" onclick="handleScan()">🔍 查询</button>
+              <button class="btn btn-ghost" style="color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.2)" onclick="simulateScan()">⚡ 模拟扫描</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scan Result & Processing -->
+      <div id="scan-result" class="hidden"></div>
+    </div>
+
+    <!-- Queue Tab -->
+    <div id="tab-queue" class="tab-content hidden">
+      <div style="margin-bottom:var(--space-4)">
+        <h2 style="font-size:1.125rem;font-weight:700">待处理包裹</h2>
+        <p class="text-sm text-gray">点击包裹开始处理</p>
+      </div>
+      <div class="queue-list" id="queue-list"></div>
+    </div>
+
+    <!-- History Tab -->
+    <div id="tab-history" class="tab-content hidden">
+      <div style="margin-bottom:var(--space-4)">
+        <h2 style="font-size:1.125rem;font-weight:700">今日处理记录</h2>
+        <p class="text-sm text-gray">已完成的包裹处理记录</p>
+      </div>
+      <div class="queue-list" id="history-list"></div>
+    </div>
+  </div>
+
+  <script src="../shared/data.js"></script>
+  <script>
+    // ---- State ----
+    let orders = JSON.parse(JSON.stringify(MOCK_DATA.orders));
+    let currentOrder = null;
+    let processState = { step: 0, itemsVerified: [], labelApplied: false, customsSubmitted: false };
+
+    // ---- Tab Switching ----
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+      document.querySelectorAll('.wh-nav-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(`tab-${tab}`).classList.remove('hidden');
+      document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+
+      if (tab === 'queue') renderQueue();
+      if (tab === 'history') renderHistory();
+      if (tab === 'scan') updateTodayStats();
+    }
+
+    // ---- Scan ----
+    function handleScan() {
+      const input = document.getElementById('scan-input').value.trim();
+      if (!input) {
+        Utils.showToast('请输入或扫描快递单号', 'warning');
+        return;
+      }
+      findOrderByTracking(input);
+    }
+
+    function simulateScan() {
+      const pendingOrders = orders.filter(o => o.status === 'pending');
+      if (!pendingOrders.length) {
+        Utils.showToast('没有待处理的包裹', 'info');
+        return;
+      }
+      const random = pendingOrders[Math.floor(Math.random() * pendingOrders.length)];
+      document.getElementById('scan-input').value = random.domesticTracking;
+      findOrderByTracking(random.domesticTracking);
+    }
+
+    function findOrderByTracking(tracking) {
+      const order = orders.find(o => o.domesticTracking === tracking);
+      if (!order) {
+        Utils.showToast('未找到该快递单号对应的订单', 'error');
+        return;
+      }
+      if (order.status === 'completed') {
+        Utils.showToast('该订单已完成处理', 'info');
+        return;
+      }
+      currentOrder = order;
+      processState = {
+        step: order.status === 'pending' ? 0 : 1,
+        itemsVerified: order.items.map(() => false),
+        labelApplied: !!order.crossBorderTracking,
+        customsSubmitted: order.customsStatus !== 'not_submitted'
+      };
+      renderProcessingUI();
+    }
+
+    function renderProcessingUI() {
+      const order = currentOrder;
+      const scanSection = document.getElementById('scan-section');
+      const resultSection = document.getElementById('scan-result');
+
+      scanSection.classList.add('hidden');
+      resultSection.classList.remove('hidden');
+      resultSection.innerHTML = `
+        <div class="scan-result success-pop">
+          <div class="scan-result-card">
+            <div class="scan-result-header">
+              <div>
+                <div class="scan-result-id">${order.id}</div>
+                <div class="text-sm text-gray" style="margin-top:2px">${order.domesticCarrier} · ${order.domesticTracking}</div>
+              </div>
+              <button class="btn btn-outline btn-sm" onclick="resetScan()">✕ 关闭</button>
+            </div>
+            <div class="scan-result-body">
+              <div class="order-detail-grid">
+                <div class="detail-item"><div class="detail-label">目的地</div><div class="detail-value">${order.destination}</div></div>
+                <div class="detail-item"><div class="detail-label">客户</div><div class="detail-value">${order.customerName}</div></div>
+                <div class="detail-item"><div class="detail-label">商品数</div><div class="detail-value">${order.items.reduce((s,i)=>s+i.qty,0)} 件</div></div>
+                <div class="detail-item"><div class="detail-label">申报价值</div><div class="detail-value" style="color:var(--primary)">$${order.declaredValue.toLocaleString()}</div></div>
+                <div class="detail-item"><div class="detail-label">重量</div><div class="detail-value">${order.weight} kg</div></div>
+                <div class="detail-item"><div class="detail-label">报关类别</div><div class="detail-value">${order.customsCategory || '-'}</div></div>
+              </div>
+              ${order.notes ? `<div style="margin-top:var(--space-3);padding:var(--space-3);background:var(--warning-50);border-radius:var(--radius-md);font-size:0.875rem"><strong>⚠ 备注：</strong>${order.notes}</div>` : ''}
+            </div>
+          </div>
+
+          <!-- Processing Steps -->
+          <div class="process-steps">
+            <!-- Step 1: Remove Domestic Label -->
+            <div class="process-step ${processState.step > 0 ? 'done' : processState.step === 0 ? 'active' : ''}" id="step-0">
+              <div class="process-step-header">
+                <div class="process-step-title">
+                  <span class="process-step-num">${processState.step > 0 ? '✓' : '1'}</span>
+                  撕除国内快递面单
+                </div>
+                ${processState.step === 0 ? '<button class="btn btn-primary btn-sm" onclick="completeStep(0)">✓ 已撕除</button>' : ''}
+              </div>
+              <div class="process-step-desc">将包裹上的国内快递面单完整撕除，确保无残留胶印</div>
+            </div>
+
+            <!-- Step 2: Verify Items -->
+            <div class="process-step ${processState.step > 1 ? 'done' : processState.step === 1 ? 'active' : ''}" id="step-1">
+              <div class="process-step-header">
+                <div class="process-step-title">
+                  <span class="process-step-num">${processState.step > 1 ? '✓' : '2'}</span>
+                  核实商品
+                </div>
+                ${processState.step === 1 && processState.itemsVerified.every(v => v) ? '<button class="btn btn-primary btn-sm" onclick="completeStep(1)">全部核实 ✓</button>' : ''}
+              </div>
+              <div class="process-step-desc">逐项核对商品SKU、数量、质量，确保与订单一致</div>
+              ${processState.step >= 1 ? `
+                <div class="process-step-body">
+                  ${order.items.map((item, idx) => `
+                    <div class="verify-item ${processState.itemsVerified[idx] ? 'verified' : ''}" id="verify-${idx}">
+                      <div class="verify-item-info">
+                        <div class="verify-item-name">${item.name}</div>
+                        <div class="verify-item-meta">SKU: ${item.sku} · 数量: ${item.qty} · 单价: ¥${item.price}</div>
+                      </div>
+                      <button class="verify-check ${processState.itemsVerified[idx] ? 'checked' : ''}" onclick="toggleVerify(${idx})">
+                        ${processState.itemsVerified[idx] ? '✓' : ''}
+                      </button>
+                    </div>
+                  `).join('')}
+                </div>
+              ` : ''}
+            </div>
+
+            <!-- Step 3: Apply Cross-Border Label -->
+            <div class="process-step ${processState.step > 2 ? 'done' : processState.step === 2 ? 'active' : ''}" id="step-2">
+              <div class="process-step-header">
+                <div class="process-step-title">
+                  <span class="process-step-num">${processState.step > 2 ? '✓' : '3'}</span>
+                  贴跨境物流面单
+                </div>
+                ${processState.step === 2 ? '<button class="btn btn-primary btn-sm" onclick="completeStep(2)">✓ 已贴标</button>' : ''}
+              </div>
+              <div class="process-step-desc">打印并粘贴跨境物流面单，确保面单平整、信息清晰</div>
+              ${processState.step >= 2 ? `
+                <div class="process-step-body">
+                  <div class="label-preview">
+                    <div class="label-header">CROSS-BORDER SHIPPING LABEL</div>
+                    <div class="label-row"><span>Order:</span><span>${order.id}</span></div>
+                    <div class="label-row"><span>Carrier:</span><span>${order.crossBorderCarrier || 'DHL Express'}</span></div>
+                    <div class="label-row"><span>Tracking:</span><span>${order.crossBorderTracking || Utils.generateTracking('DHL Express')}</span></div>
+                    <div class="label-row"><span>Dest:</span><span>${order.destination} (${order.destinationCode})</span></div>
+                    <div class="label-row"><span>Weight:</span><span>${order.weight} kg</span></div>
+                    <div class="label-row"><span>Value:</span><span>$${order.declaredValue}</span></div>
+                    <div class="label-barcode">||| ${order.id} |||</div>
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+
+            <!-- Step 4: Customs Declaration -->
+            <div class="process-step ${processState.step > 3 ? 'done' : processState.step === 3 ? 'active' : ''}" id="step-3">
+              <div class="process-step-header">
+                <div class="process-step-title">
+                  <span class="process-step-num">${processState.step > 3 ? '✓' : '4'}</span>
+                  报关提交
+                </div>
+                ${processState.step === 3 ? '<button class="btn btn-primary btn-sm" onclick="completeStep(3)">提交报关</button>' : ''}
+              </div>
+              <div class="process-step-desc">提交报关资料，等待海关审核通过后安排出库</div>
+              ${processState.step >= 3 && processState.step <= 3 ? `
+                <div class="process-step-body">
+                  <div style="background:var(--info-50);padding:var(--space-4);border-radius:var(--radius-lg);font-size:0.875rem">
+                    <div style="margin-bottom:var(--space-2)"><strong>报关信息确认：</strong></div>
+                    <div class="order-detail-grid">
+                      <div class="detail-item"><div class="detail-label">HS编码</div><div class="detail-value">${order.hsCode}</div></div>
+                      <div class="detail-item"><div class="detail-label">商品类别</div><div class="detail-value">${order.customsCategory}</div></div>
+                      <div class="detail-item"><div class="detail-label">申报价值</div><div class="detail-value">$${order.declaredValue}</div></div>
+                      <div class="detail-item"><div class="detail-label">目的国</div><div class="detail-value">${order.destination}</div></div>
+                    </div>
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+
+            <!-- Step 5: Complete -->
+            ${processState.step >= 4 ? `
+            <div class="process-step done" id="step-complete">
+              <div class="success-screen">
+                <div class="success-icon-big success-pop">🎉</div>
+                <h2 style="font-size:1.5rem;font-weight:700;margin-bottom:var(--space-2)">处理完成！</h2>
+                <p style="color:var(--gray-500);margin-bottom:var(--space-6)">订单 ${order.id} 已完成所有仓库作业流程</p>
+                <button class="btn btn-primary btn-lg" onclick="resetScan()">📷 处理下一个包裹</button>
+              </div>
+            </div>
+            ` : ''}
+          </div>
+        </div>
+      `;
+
+      // Scroll to active step
+      setTimeout(() => {
+        const activeStep = document.querySelector('.process-step.active');
+        if (activeStep) activeStep.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 200);
+    }
+
+    function completeStep(step) {
+      const order = currentOrder;
+      if (!order) return;
+
+      switch(step) {
+        case 0: // Remove label
+          processState.step = 1;
+          Utils.showToast('国内面单已撕除', 'success');
+          break;
+        case 1: // Verify items
+          if (!processState.itemsVerified.every(v => v)) {
+            Utils.showToast('请先核实所有商品', 'warning');
+            return;
+          }
+          processState.step = 2;
+          order.items.forEach(i => i.verified = true);
+          Utils.showToast('商品核实完成', 'success');
+          break;
+        case 2: // Apply label
+          if (!order.crossBorderTracking) {
+            const carrier = order.crossBorderCarrier || 'DHL Express';
+            order.crossBorderCarrier = carrier;
+            order.crossBorderTracking = Utils.generateTracking(carrier);
+          }
+          order.status = 'processing';
+          processState.step = 3;
+          Utils.showToast('跨境面单已粘贴', 'success');
+          break;
+        case 3: // Customs
+          order.customsStatus = 'submitted';
+          order.updatedAt = new Date().toLocaleString('zh-CN').replace(/\//g, '-');
+          processState.step = 4;
+          order.status = 'completed';
+          Utils.showToast('报关已提交，订单处理完成！', 'success');
+          break;
+      }
+      renderProcessingUI();
+      updateTodayStats();
+    }
+
+    function toggleVerify(idx) {
+      processState.itemsVerified[idx] = !processState.itemsVerified[idx];
+      renderProcessingUI();
+    }
+
+    function resetScan() {
+      currentOrder = null;
+      document.getElementById('scan-section').classList.remove('hidden');
+      document.getElementById('scan-result').classList.add('hidden');
+      document.getElementById('scan-input').value = '';
+      document.getElementById('scan-input').focus();
+      updateTodayStats();
+    }
+
+    // ---- Queue ----
+    function renderQueue() {
+      const pending = orders.filter(o => o.status === 'pending' || o.status === 'processing');
+      document.getElementById('queue-list').innerHTML = pending.length ? pending.map(o => `
+        <div class="queue-item" onclick="loadFromQueue('${o.id}')">
+          <div class="queue-item-icon" style="background:${o.status==='processing'?'var(--info-50)':'var(--warning-50)'}">
+            ${o.status==='processing' ? '🔄' : '📦'}
+          </div>
+          <div class="queue-item-info">
+            <div class="queue-item-title">${o.id} · ${o.domesticTracking}</div>
+            <div class="queue-item-meta">${o.destination} · ${o.items.reduce((s,i)=>s+i.qty,0)}件 · $${o.declaredValue}</div>
+          </div>
+          <span class="badge ${Utils.statusBadgeClass(o.status)}"><span class="badge-dot"></span>${Utils.statusText(o.status)}</span>
+          <span class="queue-item-arrow">›</span>
+        </div>
+      `).join('') : '<div class="empty-state"><div class="empty-state-icon">🎉</div><div class="empty-state-text">没有待处理的包裹</div></div>';
+    }
+
+    function loadFromQueue(orderId) {
+      const order = orders.find(o => o.id === orderId);
+      if (!order) return;
+      switchTab('scan');
+      document.getElementById('scan-input').value = order.domesticTracking;
+      findOrderByTracking(order.domesticTracking);
+    }
+
+    // ---- History ----
+    function renderHistory() {
+      const completed = orders.filter(o => o.status === 'completed');
+      document.getElementById('history-list').innerHTML = completed.length ? completed.map(o => `
+        <div class="queue-item" style="cursor:default">
+          <div class="queue-item-icon" style="background:var(--accent-50)">✅</div>
+          <div class="queue-item-info">
+            <div class="queue-item-title">${o.id} · ${o.domesticTracking}</div>
+            <div class="queue-item-meta">${o.destination} · ${o.operator || '仓管员'} · ${Utils.formatDateTime(o.updatedAt)}</div>
+          </div>
+          <span class="badge badge-completed"><span class="badge-dot"></span>已完成</span>
+        </div>
+      `).join('') : '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-text">今日暂无处理记录</div></div>';
+    }
+
+    // ---- Stats ----
+    function updateTodayStats() {
+      const stats = Utils.getStats(orders);
+      document.getElementById('wh-today-count').textContent = stats.completed;
+      document.getElementById('wh-pending-count').textContent = stats.pending + stats.processing;
+      document.getElementById('wh-done-count').textContent = stats.completed;
+    }
+
+    // ---- Keyboard ----
+    document.addEventListener('DOMContentLoaded', () => {
+      const scanInput = document.getElementById('scan-input');
+      scanInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') handleScan();
+      });
+      updateTodayStats();
+    });
+  </script>
+</body>
+</html>

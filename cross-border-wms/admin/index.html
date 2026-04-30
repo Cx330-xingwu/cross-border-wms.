@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>跨境电商仓库管理系统 - 管理员端</title>
+  <link rel="stylesheet" href="../assets/css/variables.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <style>
+    /* Admin-specific styles */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-4);
+      margin-bottom: var(--space-6);
+    }
+    @media (max-width: 1024px) { .dashboard-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 640px) { .dashboard-grid { grid-template-columns: 1fr; } }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: var(--space-4);
+      margin-bottom: var(--space-6);
+    }
+    @media (max-width: 1024px) { .charts-grid { grid-template-columns: 1fr; } }
+
+    .mini-chart {
+      height: 200px;
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      padding: var(--space-4) 0;
+    }
+    .mini-chart-bar {
+      flex: 1;
+      background: linear-gradient(180deg, var(--primary), var(--primary-light));
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+      min-height: 8px;
+      transition: height var(--transition-slow);
+      position: relative;
+    }
+    .mini-chart-bar:hover { opacity: 0.85; }
+    .mini-chart-bar::after {
+      content: attr(data-label);
+      position: absolute;
+      bottom: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.625rem;
+      color: var(--gray-400);
+      white-space: nowrap;
+    }
+
+    .donut-chart {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      margin: var(--space-4) auto;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .donut-center {
+      position: absolute;
+      text-align: center;
+    }
+    .donut-center .value { font-size: 1.5rem; font-weight: 700; color: var(--gray-900); }
+    .donut-center .label { font-size: 0.75rem; color: var(--gray-500); }
+
+    .legend { display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: center; margin-top: var(--space-3); }
+    .legend-item { display: flex; align-items: center; gap: var(--space-1); font-size: 0.75rem; color: var(--gray-600); }
+    .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+    .recent-activity {
+      list-style: none;
+    }
+    .recent-activity li {
+      padding: var(--space-3) 0;
+      border-bottom: 1px solid var(--gray-100);
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-3);
+      font-size: 0.875rem;
+    }
+    .recent-activity li:last-child { border-bottom: none; }
+    .activity-icon {
+      width: 32px; height: 32px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.875rem;
+      flex-shrink: 0;
+    }
+    .activity-time { font-size: 0.75rem; color: var(--gray-400); margin-top: 2px; }
+
+    .operator-card {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3);
+      border-radius: var(--radius-lg);
+      transition: background var(--transition-fast);
+    }
+    .operator-card:hover { background: var(--gray-50); }
+    .operator-avatar {
+      width: 40px; height: 40px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: #fff;
+      font-size: 0.875rem;
+    }
+    .operator-info { flex: 1; }
+    .operator-name { font-size: 0.875rem; font-weight: 600; }
+    .operator-meta { font-size: 0.75rem; color: var(--gray-500); }
+    .operator-status {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+    .operator-status.active { background: var(--accent); }
+    .operator-status.offline { background: var(--gray-300); }
+
+    .detail-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-4);
+    }
+    @media (max-width: 768px) { .detail-grid-3 { grid-template-columns: 1fr; } }
+
+    .items-table td:first-child { font-family: var(--font-mono); font-size: 0.8125rem; }
+
+    .tab-bar {
+      display: flex;
+      gap: var(--space-1);
+      border-bottom: 2px solid var(--gray-200);
+      margin-bottom: var(--space-6);
+    }
+    .tab-btn {
+      padding: var(--space-3) var(--space-5);
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--gray-500);
+      background: none;
+      border: none;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all var(--transition-fast);
+    }
+    .tab-btn:hover { color: var(--gray-700); }
+    .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+    .customs-timeline {
+      position: relative;
+      padding-left: var(--space-8);
+    }
+    .customs-timeline::before {
+      content: '';
+      position: absolute;
+      left: 15px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--gray-200);
+    }
+    .timeline-item {
+      position: relative;
+      margin-bottom: var(--space-5);
+    }
+    .timeline-dot {
+      position: absolute;
+      left: calc(-1 * var(--space-8) + 8px);
+      top: 4px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 3px solid #fff;
+      box-shadow: 0 0 0 2px var(--primary);
+      background: var(--primary);
+    }
+    .timeline-dot.done { background: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+    .timeline-dot.pending { background: #fff; box-shadow: 0 0 0 2px var(--gray-300); }
+    .timeline-content {
+      background: var(--gray-50);
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-lg);
+    }
+    .timeline-title { font-size: 0.875rem; font-weight: 600; }
+    .timeline-desc { font-size: 0.8125rem; color: var(--gray-500); margin-top: 2px; }
+    .timeline-time { font-size: 0.75rem; color: var(--gray-400); margin-top: var(--space-1); }
+
+    .report-card {
+      padding: var(--space-5);
+      background: var(--gray-50);
+      border-radius: var(--radius-lg);
+      text-align: center;
+    }
+    .report-card .icon { font-size: 2rem; margin-bottom: var(--space-2); }
+    .report-card .value { font-size: 1.5rem; font-weight: 700; color: var(--gray-900); }
+    .report-card .label { font-size: 0.8125rem; color: var(--gray-500); margin-top: var(--space-1); }
+  </style>
+</head>
+<body>
+  <!-- Login Page -->
+  <div id="login-page" class="login-page">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="login-logo-icon">🌐</div>
+        <div class="login-title">跨境电商仓库管理系统</div>
+        <div class="login-subtitle">管理员控制台 · Admin Console</div>
+      </div>
+      <form id="login-form" class="login-form" onsubmit="return handleLogin(event)">
+        <div id="login-error" class="login-error">
+          <span>⚠</span>
+          <span id="login-error-text">用户名或密码错误</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">管理员账号</label>
+          <input type="text" id="login-username" class="form-input" placeholder="请输入管理员账号" autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label class="form-label">登录密码</label>
+          <input type="password" id="login-password" class="form-input" placeholder="请输入登录密码" autocomplete="current-password">
+        </div>
+        <button type="submit" class="login-btn" id="login-btn">
+          登录管理后台
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div id="app" class="app-layout hidden">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">🌐</div>
+        <div class="sidebar-brand">
+          跨境仓管
+          <small>Cross-Border WMS</small>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">主菜单</div>
+          <a class="sidebar-link active" data-page="dashboard" onclick="navigateTo('dashboard')">
+            <span class="icon">📊</span> 数据看板
+          </a>
+          <a class="sidebar-link" data-page="orders" onclick="navigateTo('orders')">
+            <span class="icon">📦</span> 订单管理
+            <span class="badge-count" id="pending-count">3</span>
+          </a>
+          <a class="sidebar-link" data-page="customs" onclick="navigateTo('customs')">
+            <span class="icon">🛃</span> 报关管理
+          </a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">系统管理</div>
+          <a class="sidebar-link" data-page="operators" onclick="navigateTo('operators')">
+            <span class="icon">👥</span> 操作员管理
+          </a>
+          <a class="sidebar-link" data-page="logistics" onclick="navigateTo('logistics')">
+            <span class="icon">🚚</span> 物流渠道
+          </a>
+          <a class="sidebar-link" data-page="reports" onclick="navigateTo('reports')">
+            <span class="icon">📈</span> 数据报表
+          </a>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="sidebar-avatar">A</div>
+          <div class="sidebar-user-info">
+            <div class="sidebar-user-name">Admin</div>
+            <div class="sidebar-user-role">系统管理员</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="handleLogout()" title="退出登录" style="color:var(--gray-400)">⏻</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Top Bar -->
+      <div class="top-bar">
+        <div class="top-bar-left">
+          <h1 class="page-title" id="page-title">数据看板</h1>
+          <div class="breadcrumb" id="breadcrumb">
+            <span>🏠</span> / <span>数据看板</span>
+          </div>
+        </div>
+        <div class="top-bar-right">
+          <button class="top-bar-btn" onclick="refreshData()" title="刷新数据">🔄</button>
+          <button class="top-bar-btn" title="通知">
+            🔔
+            <span class="dot"></span>
+          </button>
+          <button class="top-bar-btn" onclick="navigateTo('reports')" title="报表">📋</button>
+        </div>
+      </div>
+
+      <!-- Page Container -->
+      <div class="page-content" id="page-container">
+        <!-- Dashboard Page -->
+        <div id="page-dashboard" class="page animate-fade-in">
+          <div class="dashboard-grid" id="stats-grid"></div>
+          <div class="charts-grid">
+            <div class="card">
+              <div class="card-header">
+                <span class="font-semibold">近7日处理趋势</span>
+                <span class="text-xs text-gray">单位：单</span>
+              </div>
+              <div class="card-body">
+                <div class="mini-chart" id="trend-chart"></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <span class="font-semibold">订单状态分布</span>
+              </div>
+              <div class="card-body">
+                <div class="donut-chart" id="donut-chart">
+                  <div class="donut-center">
+                    <div class="value" id="donut-total">0</div>
+                    <div class="label">总订单</div>
+                  </div>
+                </div>
+                <div class="legend" id="donut-legend"></div>
+              </div>
+            </div>
+          </div>
+          <div class="charts-grid">
+            <div class="card">
+              <div class="card-header">
+                <span class="font-semibold">最新动态</span>
+                <button class="btn btn-ghost btn-sm" onclick="navigateTo('orders')">查看全部 →</button>
+              </div>
+              <div class="card-body" style="padding:0">
+                <div class="table-container" style="border:none;border-radius:0">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>订单号</th>
+                        <th>目的地</th>
+                        <th>状态</th>
+                        <th>更新时间</th>
+                      </tr>
+                    </thead>
+                    <tbody id="recent-orders-table"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <span class="font-semibold">操作员状态</span>
+                <button class="btn btn-ghost btn-sm" onclick="navigateTo('operators')">管理 →</button>
+              </div>
+              <div class="card-body" id="operator-status-list"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Orders Page -->
+        <div id="page-orders" class="page hidden animate-fade-in">
+          <div class="filter-bar">
+            <div class="search-box" style="flex:1;min-width:200px;">
+              <span class="search-icon">🔍</span>
+              <input type="text" class="form-input" id="order-search" placeholder="搜索订单号、快递单号、客户姓名..." style="padding-left:2.5rem">
+            </div>
+            <select class="form-select" id="status-filter" style="width:auto;min-width:130px;">
+              <option value="">全部状态</option>
+              <option value="pending">待处理</option>
+              <option value="processing">处理中</option>
+              <option value="completed">已完成</option>
+              <option value="cancelled">已取消</option>
+            </select>
+            <select class="form-select" id="customs-filter" style="width:auto;min-width:130px;">
+              <option value="">报关状态</option>
+              <option value="not_submitted">未提交</option>
+              <option value="submitted">已提交</option>
+              <option value="approved">已通过</option>
+            </select>
+            <button class="btn btn-primary" onclick="showAddOrderModal()">+ 新建订单</button>
+          </div>
+          <div class="card">
+            <div class="table-container" style="border:none;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>订单号</th>
+                    <th>国内快递单号</th>
+                    <th>目的地</th>
+                    <th>商品数</th>
+                    <th>申报价值</th>
+                    <th>订单状态</th>
+                    <th>报关状态</th>
+                    <th>创建时间</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody id="orders-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Customs Page -->
+        <div id="page-customs" class="page hidden animate-fade-in">
+          <div class="tab-bar">
+            <button class="tab-btn active" onclick="switchCustomsTab('pending')">待报关</button>
+            <button class="tab-btn" onclick="switchCustomsTab('submitted')">已提交</button>
+            <button class="tab-btn" onclick="switchCustomsTab('approved')">已通过</button>
+          </div>
+          <div id="customs-content"></div>
+        </div>
+
+        <!-- Operators Page -->
+        <div id="page-operators" class="page hidden animate-fade-in">
+          <div class="filter-bar">
+            <div class="search-box" style="flex:1;min-width:200px;">
+              <span class="search-icon">🔍</span>
+              <input type="text" class="form-input" placeholder="搜索操作员..." style="padding-left:2.5rem">
+            </div>
+            <button class="btn btn-primary">+ 添加操作员</button>
+          </div>
+          <div class="card">
+            <div class="table-container" style="border:none;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>操作员</th>
+                    <th>工号</th>
+                    <th>角色</th>
+                    <th>今日处理</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody id="operators-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Logistics Page -->
+        <div id="page-logistics" class="page hidden animate-fade-in">
+          <div class="card">
+            <div class="card-header">
+              <span class="font-semibold">跨境物流渠道</span>
+              <button class="btn btn-primary btn-sm">+ 添加渠道</button>
+            </div>
+            <div class="table-container" style="border:none;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>渠道编码</th>
+                    <th>渠道名称</th>
+                    <th>预计时效</th>
+                    <th>单号前缀</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody id="logistics-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reports Page -->
+        <div id="page-reports" class="page hidden animate-fade-in">
+          <div class="detail-grid-3" style="margin-bottom:var(--space-6)">
+            <div class="report-card">
+              <div class="icon">📦</div>
+              <div class="value" id="rpt-total">0</div>
+              <div class="label">总订单量</div>
+            </div>
+            <div class="report-card">
+              <div class="icon">💰</div>
+              <div class="value" id="rpt-value">$0</div>
+              <div class="label">总申报价值</div>
+            </div>
+            <div class="report-card">
+              <div class="icon">⚖️</div>
+              <div class="value" id="rpt-weight">0 kg</div>
+              <div class="label">总重量</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <span class="font-semibold">目的地分布统计</span>
+            </div>
+            <div class="card-body" id="destination-stats"></div>
+          </div>
+          <div class="card" style="margin-top:var(--space-4)">
+            <div class="card-header">
+              <span class="font-semibold">商品类别统计</span>
+            </div>
+            <div class="card-body" id="category-stats"></div>
+          </div>
+        </div>
+
+        <!-- Order Detail (hidden by default) -->
+        <div id="page-order-detail" class="page hidden animate-fade-in">
+          <div style="margin-bottom:var(--space-4)">
+            <button class="btn btn-outline" onclick="navigateTo('orders')">← 返回订单列表</button>
+          </div>
+          <div id="order-detail-content"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../shared/data.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
